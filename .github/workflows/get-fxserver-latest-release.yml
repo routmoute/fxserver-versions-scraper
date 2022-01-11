@@ -1,25 +1,54 @@
 name: Get fxserver latest release versions
-on:
-  schedule:
-    - cron:  '23 * * * *'
+on: workflow_dispatch
 jobs:
   get-versions:
     name: Get fxserver latest release versions
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Build
       run: npm install
     - name: Scrape Linux Versions
+      id: scrape-linux
       env:
         ARTIFACTS_URL: https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/
         VERSIONS_FILE_PATH: ./data/linux-versions.json
       run: npm start
     - name: Scrape Windows Versions
+      id: scrape-windows
       env:
         ARTIFACTS_URL: https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/
         VERSIONS_FILE_PATH: ./data/windows-versions.json
       run: npm start
-    - uses: actions-go/push@v1
+    - name: Commit files
+      id: commit
+      if: |
+        steps.scrape-linux.outputs.recommended ||
+        steps.scrape-linux.outputs.optional ||
+        steps.scrape-linux.outputs.latest ||
+        steps.scrape-windows.outputs.recommended ||
+        steps.scrape-windows.outputs.optional ||
+        steps.scrape-windows.outputs.latest
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git commit -m "[Auto] New FXServer versions" -a
+    - name: Push changes
+      if: steps.commit.outcome == 'success'
+      uses: ad-m/github-push-action@master
+    - name: Trigger routmoute/fxserver
+      if: steps.scrape-linux.outputs.recommended || steps.scrape-linux.outputs.optional
+      uses: informaticsmatters/trigger-ci-action@v1
       with:
-        commit-message: '[Auto] New FXServer versions'
+        ci-type: github-workflow-dispatch
+        ci-owner: ${{ secrets.WORKFLOW_USER }}
+        ci-repository: fxserver
+        ci-ref: refs/heads/main
+        ci-user: ${{ secrets.WORKFLOW_USER }}
+        ci-user-token: ${{ secrets.WORKFLOW_TOKEN }}
+        ci-name: New FXserver version released
+        ci-inputs: >-
+          recommended=${{ steps.scrape-linux.outputs.recommended }}
+          optional=${{ steps.scrape-linux.outputs.optional }}
