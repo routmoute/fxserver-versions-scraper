@@ -1,0 +1,25 @@
+name: Get fxserver latest release versions
+on:
+  schedule:
+    - cron:  '23 * * * *'
+jobs:
+  get-versions:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: npm install
+    - name: Scrape Linux Versions
+      env:
+        ARTIFACTS_URL: https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/
+        VERSIONS_FILE_PATH: ./data/linux-versions.json
+      run: npm start
+    - name: Scrape Windows Versions
+      env:
+        ARTIFACTS_URL: https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/
+        VERSIONS_FILE_PATH: ./data/windows-versions.json
+      run: npm start
+    - uses: actions-go/push@v1
+      with:
+        commit-message: '[Auto] New FXServer versions'

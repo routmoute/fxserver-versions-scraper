@@ -1,0 +1,20 @@
+version: '3.9'
+services:
+  scrape-linux-fxserver-version:
+    image: node
+    working_dir: /home/node/app
+    environment:
+      ARTIFACTS_URL: https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/
+      VERSIONS_FILE_PATH: ./data/linux-versions.json
+    volumes:
+      - ./:/home/node/app
+    command: "npm start"
+  scrape-windows-fxserver-version:
+    image: node
+    working_dir: /home/node/app
+    environment:
+      ARTIFACTS_URL: https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/
+      VERSIONS_FILE_PATH: ./data/windows-versions.json
+    volumes:
+      - ./:/home/node/app
+    command: "npm start"
