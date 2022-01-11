@@ -4,7 +4,7 @@ on:
     - cron:  '23 * * * *'
 jobs:
   get-versions:
-    name: Build
+    name: Get fxserver latest release versions
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
