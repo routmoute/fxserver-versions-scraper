@@ -51,4 +51,6 @@ jobs:
         ci-name: New FXserver version released
         ci-inputs: >-
           recommended=${{ steps.scrape-linux.outputs.recommended }}
+          recommended_url=${{ steps.scrape-linux.outputs.recommended_url }}
           optional=${{ steps.scrape-linux.outputs.optional }}
+          optional_url=${{ steps.scrape-linux.outputs.optional_url }}
