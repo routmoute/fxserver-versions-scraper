@@ -1,5 +1,7 @@
 name: Get fxserver latest release versions
-on: workflow_dispatch
+on:
+  schedule:
+    - cron: '28 * * * *'
 jobs:
   get-versions:
     name: Get fxserver latest release versions
@@ -37,7 +39,7 @@ jobs:
         git commit -m "[Auto] New FXServer versions" -a
     - name: Push changes
       if: steps.commit.outcome == 'success'
-      uses: ad-m/github-push-action@master
+      uses: ad-m/github-push-action@v0.6.0
     - name: Trigger routmoute/fxserver
       if: steps.scrape-linux.outputs.recommended || steps.scrape-linux.outputs.optional
       uses: informaticsmatters/trigger-ci-action@v1
