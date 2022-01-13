@@ -40,6 +40,8 @@ jobs:
     - name: Push changes
       if: steps.commit.outcome == 'success'
       uses: ad-m/github-push-action@v0.6.0
+      with:
+        github_token: ${{ github.token }}
     - name: Trigger routmoute/fxserver
       if: steps.scrape-linux.outputs.recommended || steps.scrape-linux.outputs.optional
       uses: informaticsmatters/trigger-ci-action@v1
