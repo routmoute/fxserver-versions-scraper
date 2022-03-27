@@ -44,7 +44,6 @@ jobs:
         github_token: ${{ github.token }}
         branch: ${{ github.ref }}
     - name: Trigger routmoute/fxserver
-      if: steps.scrape-linux.outputs.recommended || steps.scrape-linux.outputs.optional
       uses: informaticsmatters/trigger-ci-action@v1
       with:
         ci-type: github-workflow-dispatch
@@ -55,6 +54,8 @@ jobs:
         ci-user-token: ${{ secrets.WORKFLOW_TOKEN }}
         ci-name: New FXserver version released
         ci-inputs: >-
+          latest=${{ steps.scrape-windows.outputs.latest }}
+          latest_url=${{ steps.scrape-windows.outputs.latest_url }}
           recommended=${{ steps.scrape-linux.outputs.recommended }}
           recommended_url=${{ steps.scrape-linux.outputs.recommended_url }}
           optional=${{ steps.scrape-linux.outputs.optional }}
