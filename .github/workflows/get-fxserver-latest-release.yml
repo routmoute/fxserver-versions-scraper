@@ -44,6 +44,7 @@ jobs:
         github_token: ${{ github.token }}
         branch: ${{ github.ref }}
     - name: Trigger routmoute/fxserver
+      if: steps.scrape-linux.outputs.latest || steps.scrape-linux.outputs.recommended || steps.scrape-linux.outputs.optional
       uses: informaticsmatters/trigger-ci-action@v1
       with:
         ci-type: github-workflow-dispatch
