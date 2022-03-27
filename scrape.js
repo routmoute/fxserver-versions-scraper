@@ -41,26 +41,26 @@ const latest = {
   url: artifactsUrl + latestFile.slice(2)
 };
 
+const sendNewVersionToGitlab = function(version, oldVersion, newVersion, newUrl) {
+  console.log('New ' + version + ' version detected ! - ' + oldVersion + ' => ' + newVersion);
+  console.log('::set-output name=' + version + '::' + newVersion);
+  console.log('::set-output name=' + version + '_url::' + newUrl);
+};
+
 let newVersion = false
 
 if (versions.recommended.version != recommended.version) {
-  console.log('New recommended version detected ! - ' + versions.recommended.version + ' => ' + recommended.version);
-  console.log('::set-output name=recommended::' + recommended.version);
-  console.log('::set-output name=recommended_url::' + recommended.url);
+  sendNewVersionToGitlab("recommended", versions.recommended.version, recommended.version, recommended.url);
   versions.recommended = recommended;
   newVersion = true;
 }
 if (versions.optional.version != optional.version) {
-  console.log('New optional version detected ! - ' + versions.optional.version + ' => ' + optional.version);
-  console.log('::set-output name=optional::' + optional.version);
-  console.log('::set-output name=optional_url::' + optional.url);
+  sendNewVersionToGitlab("optional", versions.optional.version, optional.version, optional.url);
   versions.optional = optional;
   newVersion = true;
 }
 if (versions.latest.version != latest.version) {
-  console.log('New latest version detected ! - ' + versions.latest.version + ' => ' + latest.version);
-  console.log('::set-output name=latest::' + latest.version);
-  console.log('::set-output name=latest_url::' + latest.url);
+  sendNewVersionToGitlab("latest", versions.latest.version, latest.version, latest.url);
   versions.latest = latest;
   newVersion = true;
 }
