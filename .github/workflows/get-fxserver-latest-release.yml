@@ -54,8 +54,8 @@ jobs:
         ci-user-token: ${{ secrets.WORKFLOW_TOKEN }}
         ci-name: New FXserver version released
         ci-inputs: >-
-          latest=${{ steps.scrape-windows.outputs.latest }}
-          latest_url=${{ steps.scrape-windows.outputs.latest_url }}
+          latest=${{ steps.scrape-linux.outputs.latest }}
+          latest_url=${{ steps.scrape-linux.outputs.latest_url }}
           recommended=${{ steps.scrape-linux.outputs.recommended }}
           recommended_url=${{ steps.scrape-linux.outputs.recommended_url }}
           optional=${{ steps.scrape-linux.outputs.optional }}
