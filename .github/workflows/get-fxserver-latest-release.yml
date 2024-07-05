@@ -7,7 +7,7 @@ jobs:
     name: Get fxserver latest release versions
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Build
@@ -39,7 +39,7 @@ jobs:
         git commit -m "[Auto] New FXServer versions" -a
     - name: Push changes
       if: steps.commit.outcome == 'success'
-      uses: ad-m/github-push-action@v0.6.0
+      uses: ad-m/github-push-action@v0.8.0
       with:
         github_token: ${{ github.token }}
         branch: ${{ github.ref }}
