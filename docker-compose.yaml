@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   scrape-linux-fxserver-version:
     image: node

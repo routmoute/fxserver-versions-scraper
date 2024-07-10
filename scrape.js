@@ -43,8 +43,8 @@ const latest = {
 
 const sendNewVersionToGitlab = function(version, oldVersion, newVersion, newUrl) {
   console.log('New ' + version + ' version detected ! - ' + oldVersion + ' => ' + newVersion);
-  fs.writeFileSync(process.env.GITHUB_OUTPUT, version + '=' + newVersion);
-  fs.writeFileSync(process.env.GITHUB_OUTPUT, version + '_url=' + newUrl);
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, version + '=' + newVersion + '\r\n');
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, version + '_url=' + newUrl + '\r\n');
 };
 
 let newVersion = false
