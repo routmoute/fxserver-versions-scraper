@@ -7,7 +7,7 @@ jobs:
     name: Get fxserver latest release versions
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - name: Build
@@ -28,10 +28,8 @@ jobs:
       id: commit
       if: |
         steps.scrape-linux.outputs.recommended ||
-        steps.scrape-linux.outputs.optional ||
         steps.scrape-linux.outputs.latest ||
         steps.scrape-windows.outputs.recommended ||
-        steps.scrape-windows.outputs.optional ||
         steps.scrape-windows.outputs.latest
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -39,12 +37,12 @@ jobs:
         git commit -m "[Auto] New FXServer versions" -a
     - name: Push changes
       if: steps.commit.outcome == 'success'
-      uses: ad-m/github-push-action@v0.8.0
+      uses: ad-m/github-push-action@v1.3.0
       with:
-        github_token: ${{ github.token }}
+        token: ${{ github.token }}
         branch: ${{ github.ref }}
     - name: Trigger routmoute/fxserver
-      if: steps.scrape-linux.outputs.latest || steps.scrape-linux.outputs.recommended || steps.scrape-linux.outputs.optional
+      if: steps.scrape-linux.outputs.latest || steps.scrape-linux.outputs.recommended
       uses: informaticsmatters/trigger-ci-action@v1
       with:
         ci-type: github-workflow-dispatch
@@ -59,5 +57,3 @@ jobs:
           latest_url=${{ steps.scrape-linux.outputs.latest_url }}
           recommended=${{ steps.scrape-linux.outputs.recommended }}
           recommended_url=${{ steps.scrape-linux.outputs.recommended_url }}
-          optional=${{ steps.scrape-linux.outputs.optional }}
-          optional_url=${{ steps.scrape-linux.outputs.optional_url }}
