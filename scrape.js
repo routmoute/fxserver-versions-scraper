@@ -1,62 +1,74 @@
 import fs from 'node:fs';
-import { load } from 'cheerio';
 
-const versionsFilePath = process.env.VERSIONS_FILE_PATH;
-const artifactsUrl = process.env.ARTIFACTS_URL;
-if (!versionsFilePath) {
+const linuxVersionsFilePath = process.env.LINUX_VERSIONS_FILE_PATH;
+const windowsVersionsFilePath = process.env.WINDOWS_VERSIONS_FILE_PATH;
+if (!linuxVersionsFilePath) {
   throw new Error("VERSIONS_FILE_PATH env var not set !");
 }
-if (!artifactsUrl) {
-  throw new Error("ARTIFACTS_URL env var not set !");
+if (!windowsVersionsFilePath) {
+  throw new Error("WINDOWS_VERSIONS_FILE_PATH env var not set !");
 }
 
-let versions = JSON.parse(fs.readFileSync(versionsFilePath));
-const $ = load(await (await fetch(artifactsUrl)).text());
+let linuxVersions = JSON.parse(fs.readFileSync(linuxVersionsFilePath));
+let windowsVersions = JSON.parse(fs.readFileSync(windowsVersionsFilePath));
 
-const recommendedFile = $('.is-primary').attr('href');
-const optionalFile = $('.is-danger').attr('href');
+const apiUrls = {
+  linux: "https://changelogs-live.fivem.net/api/changelog/versions/linux/server",
+  windows: "https://changelogs-live.fivem.net/api/changelog/versions/win32/server"
+};
 
-let latestFile;
-const othersArray = $('.panel-block').toArray();
-for (const i in othersArray) {
-  if (othersArray[i].name === 'a' && othersArray[i].attribs.href && othersArray[i].attribs.href !== "..") {
-    latestFile = othersArray[i].attribs.href;
-    break;
+let newLinuxVersion = false;
+let newWindowsVersion = false;
+
+const entries = [];
+for (const [os, apiUrl] of Object.entries(apiUrls)) {
+  console.log(`Fetching versions for ${os} from ${apiUrl}`);
+  const response = await fetch(apiUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${apiUrl}: ${response.status}`);
+  }
+  const data = await response.json();
+  for (const versionType of ["recommended", "latest"]) {
+    const version = String(data[versionType]);
+    const url = data[`${versionType}_download`];
+    if (!/^[0-9]+$/.test(version) || !url) {
+      throw new Error(`Invalid data for ${os}-${versionType}: ${version} / ${url}`);
+    }
+    entries.push([`${os}-${versionType}`, versionType, version, url]);
   }
 }
 
-const getVersionRegex = /[0-9]+/;
-
-const recommended = {
-  version: getVersionRegex.exec(recommendedFile)[0],
-  url: artifactsUrl + recommendedFile.slice(2)
-};
-const latest = {
-  version: getVersionRegex.exec(latestFile)[0],
-  url: artifactsUrl + latestFile.slice(2)
-};
-
-const sendNewVersionToGitlab = function(version, oldVersion, newVersion, newUrl) {
-  console.log('New ' + version + ' version detected ! - ' + oldVersion + ' => ' + newVersion);
-  fs.appendFileSync(process.env.GITHUB_OUTPUT, version + '=' + newVersion + '\r\n');
-  fs.appendFileSync(process.env.GITHUB_OUTPUT, version + '_url=' + newUrl + '\r\n');
-};
-
-let newVersion = false
-
-if (versions.recommended.version != recommended.version) {
-  sendNewVersionToGitlab("recommended", versions.recommended.version, recommended.version, recommended.url);
-  versions.recommended = recommended;
-  newVersion = true;
-}
-if (versions.latest.version != latest.version) {
-  sendNewVersionToGitlab("latest", versions.latest.version, latest.version, latest.url);
-  versions.latest = latest;
-  newVersion = true;
+for (const [key, versionType, newVersion, buttonLink] of entries) {
+  let lastVersion = null;
+  if (key.includes("linux")) {
+    lastVersion = linuxVersions[versionType].version;
+  } else if (key.includes("windows")) {
+    lastVersion = windowsVersions[versionType].version;
+  }
+  console.log(`Checking ${key}: last version = ${lastVersion}, new version = ${newVersion}`);
+  if (newVersion !== lastVersion) {
+    console.log(`New version detected for ${key}: ${lastVersion} => ${newVersion}`);
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, versionType + '=' + newVersion + '\r\n');
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, versionType + '_url=' + buttonLink + '\r\n');
+    if (key.includes("linux")) {
+      newLinuxVersion = true;
+      linuxVersions[versionType].version = newVersion;
+      linuxVersions[versionType].url = buttonLink;
+    } else if (key.includes("windows")) {
+      newWindowsVersion = true;
+      windowsVersions[versionType].version = newVersion;
+      windowsVersions[versionType].url = buttonLink;
+    }
+  }
 }
 
-if (newVersion) {
-  fs.writeFileSync(versionsFilePath, JSON.stringify(versions));
+if (newLinuxVersion || newWindowsVersion) {
+  if (newLinuxVersion) {
+    fs.writeFileSync(linuxVersionsFilePath, JSON.stringify(linuxVersions));
+  }
+  if (newWindowsVersion) {
+    fs.writeFileSync(windowsVersionsFilePath, JSON.stringify(windowsVersions));
+  }
 } else {
   console.log('No new version detected...');
 }
