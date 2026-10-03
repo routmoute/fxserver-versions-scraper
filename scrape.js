@@ -48,8 +48,8 @@ for (const [key, versionType, newVersion, buttonLink] of entries) {
   console.log(`Checking ${key}: last version = ${lastVersion}, new version = ${newVersion}`);
   if (newVersion !== lastVersion) {
     console.log(`New version detected for ${key}: ${lastVersion} => ${newVersion}`);
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, versionType + '=' + newVersion + '\r\n');
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, versionType + '_url=' + buttonLink + '\r\n');
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, key + '=' + newVersion + '\r\n');
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, key + '_url=' + buttonLink + '\r\n');
     if (key.includes("linux")) {
       newLinuxVersion = true;
       linuxVersions[versionType].version = newVersion;
